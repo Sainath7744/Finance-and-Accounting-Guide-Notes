@@ -376,14 +376,13 @@
         function initializeState() {
             try {
                 const savedData = JSON.parse(localStorage.getItem('userAddedConcepts')) || [];
-                state.data = interviewData.map(item => ({...item, answer: `<p>${item.answer}</p>`})).concat(savedData);
+                state.data = interviewData.map(item => ({...item, answer: `<div>${item.answer}</div>`})).concat(savedData);
                 const savedSettings = JSON.parse(localStorage.getItem('userSettings')) || {};
                 state.data.forEach(item => {
                     const saved = savedSettings[item.id];
                     if (saved) {
                         item.mastered = saved.mastered;
                         item.isImp = saved.isImp;
-                        // Use saved answer if it exists, otherwise use the default one.
                         if (saved.answer) {
                             item.answer = saved.answer;
                         }
@@ -395,7 +394,7 @@
                 state.nextId = interviewData.length + savedData.length + 1;
             } catch (error) {
                 console.error("Error loading state from localStorage, resetting data:", error);
-                state.data = interviewData.map(item => ({...item, answer: `<p>${item.answer}</p>`}));
+                state.data = interviewData.map(item => ({...item, answer: `<div>${item.answer}</div>`}));
             }
         }
         
@@ -546,29 +545,28 @@
         function enterEditMode(card, question) {
             card.classList.remove('cursor-pointer');
             card.style.cursor = 'default';
-            const originalContent = card.innerHTML;
             card.innerHTML = `
                 <div class="edit-mode-container flex flex-col space-y-4">
                     <input type="text" id="edit-title-${question.id}" class="text-xl font-semibold p-2 rounded-lg border-2 border-gray-300 focus:outline-none focus:border-blue-500" value="${question.question.replace(/"/g, '&quot;')}" />
-                    <div class="editor-toolbar flex space-x-2">
-                        <button data-command="bold" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors font-bold">B</button>
-                        <button data-command="italic" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors italic">I</button>
-                        <button data-command="underline" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors underline">U</button>
-                        <button data-command="insertUnorderedList" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">Bullet List</button>
-                        <button data-command="insertOrderedList" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">Numbered List</button>
+                    <div class="editor-toolbar flex flex-wrap space-x-2">
+                        <button type="button" data-command="bold" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors font-bold">B</button>
+                        <button type="button" data-command="italic" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors italic">I</button>
+                        <button type="button" data-command="underline" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors underline">U</button>
+                        <button type="button" data-command="insertUnorderedList" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">Bullet List</button>
+                        <button type="button" data-command="insertOrderedList" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">Numbered List</button>
                     </div>
-                    <div id="edit-content-${question.id}" class="edit-content p-2 rounded-lg border-2 border-gray-300 h-64 overflow-y-auto focus:outline-none focus:border-blue-500" contenteditable="true">
+                    <div id="edit-content-${question.id}" class="edit-content p-4 rounded-lg border-2 border-gray-300 h-64 overflow-y-auto focus:outline-none focus:border-blue-500" contenteditable="true">
                         ${question.answer}
                     </div>
                     <div class="flex justify-end space-x-2 mt-4">
-                        <button class="save-btn px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition-colors">Save</button>
-                        <button class="cancel-btn px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors">Cancel</button>
+                        <button type="button" class="save-btn px-4 py-2 rounded-lg bg-green-500 text-white font-medium hover:bg-green-600 transition-colors">Save</button>
+                        <button type="button" class="cancel-btn px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition-colors">Cancel</button>
                     </div>
                 </div>
             `;
             
             const editContentDiv = document.getElementById(`edit-content-${question.id}`);
-            const toolbarButtons = card.querySelectorAll('[data-command]');
+            const toolbarButtons = card.querySelectorAll('.editor-toolbar button');
             
             toolbarButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -621,7 +619,7 @@
                 category: state.currentCategory,
                 subCategory: state.currentSubCategory,
                 question: newConceptTitleInput.value.trim(),
-                answer: newConceptContentTextarea.value.trim(),
+                answer: `<div>${newConceptContentTextarea.value.trim()}</div>`,
                 mastered: false,
                 isImp: false
             };
